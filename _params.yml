@@ -1,0 +1,15 @@
+# workflows: 'demo'
+# workflows: 'fetchngs,rnaseq'
+workflows: 'taxprofiler,metaval'
+general:
+  # wf_opts: '-resume -ansi-log false'
+  wf_opts: ''
+taxprofiler:
+  wf_opts: '-profile docker,test -r generate_metaval_samplesheet'
+  input: 'tests/data/taxprofiler_samplesheet.csv'
+  params_file: 'tests/data/taxprofiler_params.yml'
+  add_config: null
+metaval:
+  wf_opts: '-profile docker,test -r dev'
+  params_file: 'tests/data/taxprofiler_params.yml'
+  add_config: null
