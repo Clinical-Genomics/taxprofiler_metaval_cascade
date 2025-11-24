@@ -17,7 +17,7 @@ workflow {
         'nf-core/taxprofiler',
         "${ params.general.wf_opts?: ''} ${params.taxprofiler.wf_opts?: ''}",     // workflow opts
         readWithDefault( params.taxprofiler.params_file, Channel.value([]) ),     // params file
-        readWithDefault( params.taxprofiler.input, fetchngs_output_samplesheet ), // samplesheet
+        readWithDefault( params.taxprofiler.input, Channel.value([]) ), // samplesheet
         readWithDefault( params.taxprofiler.add_config, Channel.value([]) ),      // custom config
         workflow.workDir.resolve('nf-core/taxprofiler').toUriString(),
     )
