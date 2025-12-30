@@ -14,6 +14,84 @@ def readWithDefault( String path, Object default_channel ) {
 //     @param dir   A channel with a directory.
 //     @return      A channel with a path relative to the dir path
 
-def resolveFileFromDir ( String path, Object dir ){
-    dir.map{ results -> file( results.resolve( path ) ) }
+def createMetavalSamplesheet(Object dir, Object fastq_sheet) {
+    if (dir && fastq_sheet) {
+        dir.combine(fastq_sheet)
+            .flatMap { results, csv_file ->
+                // Read the CSV file and create a map
+                def fastq_map = [:]
+                csv_file.splitEachLine(',') { fields ->
+                    if (fields[0] != 'sample') { // Skip header
+                        fastq_map[fields[0]] = [fields[1], fields[2], fields[3]] // instrument, fastq_1, fastq_2
+                    }
+                }
+
+                // Get all unique samples from kraken2, centrifuge, or diamond
+                def samples = []
+                def tool_names = ['kraken2', 'centrifuge', 'diamond'] // List of tool names to exclude
+
+                tool_names.each { tool ->
+                    def tool_dir = file("${results}/${tool}")
+                    if (tool_dir.exists() && tool_dir.isDirectory()) {
+                        // Iterate through all files in subdirectories
+                        tool_dir.eachFileRecurse { f ->
+                            if (f.isFile()) {
+                                // Extract sample ID from filename (e.g., "2612_db1.kraken2..." -> "2612")
+                                def matcher = f.name =~ /^([^_]+)_/
+                                if (matcher) {
+                                    def sample_id = matcher[0][1]
+                                    // Exclude tool names from sample list
+                                    if (!tool_names.contains(sample_id)) {
+                                        samples << sample_id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                samples.unique().collect { sample ->
+                    // Helper to safely get file path or empty string
+                    def safeFile = { pattern ->
+                        def files = file("${results}/${pattern}")
+                        // file() returns a list when pattern has wildcards
+                        if (files instanceof List) {
+                            return files.size() > 0 ? files[0] : ''
+                        }
+                        // Single file case
+                        return (files && files.exists() && files.size() > 0) ? files : ''
+                    }
+
+                    // Get fastq info from the map
+                    def fastq_info = fastq_map[sample] ?: ['', '', '']
+                    def instrument = fastq_info[0] ?: ''
+                    def fastq_1 = fastq_info[1] ?: ''
+                    def fastq_2 = fastq_info[2] ?: ''
+
+                    // Kraken2 files (in any db subdirectory)
+                    def k2_report = safeFile("kraken2/*/${sample}*.kraken2.report.txt")
+                    def k2_result = safeFile("kraken2/*/${sample}*.classifiedreads.txt")
+                    def k2_taxpasta = safeFile("taxpasta/kraken2*.tsv")
+
+                    // Centrifuge files (in any db subdirectory)
+                    def cent_report = safeFile("centrifuge/*/${sample}*.centrifuge.txt")
+                    def cent_result = safeFile("centrifuge/*/${sample}*.centrifuge.results.txt")
+                    def cent_taxpasta = safeFile("taxpasta/centrifuge*.tsv")
+
+                    // Diamond files (in any db subdirectory)
+                    def dia = safeFile("diamond/*/${sample}*diamond.tsv")
+                    def dia_taxpasta = safeFile("taxpasta/diamond*.tsv")
+
+                    "${sample},${instrument},${fastq_1},${fastq_2},${k2_report},${k2_result},${k2_taxpasta},${cent_report},${cent_result},${cent_taxpasta},${dia},${dia_taxpasta}"
+                }
+            }
+            .collectFile(
+                name: 'metaval_samplesheet.csv',
+                newLine: true,
+                sort: false,
+                seed: "sample,instrument,fastq_1,fastq_2,kraken2_report,kraken2_result,kraken2_taxpasta,centrifuge_report,centrifuge_result,centrifuge_taxpasta,diamond,diamond_taxpasta"
+            )
+    } else {
+        channel.value([])
+    }
 }
