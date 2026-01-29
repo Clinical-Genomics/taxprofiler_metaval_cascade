@@ -9,7 +9,7 @@ workflow {
 
     // Initialize undefined channels
     def taxprofiler_output                  = null
-
+    def metaval_samplesheet                 = null
 
     // Run pipelines
     // TAXPROFILER
