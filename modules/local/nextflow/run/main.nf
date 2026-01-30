@@ -29,12 +29,14 @@ process NEXTFLOW_RUN {
     // Run nextflow command locally in cache directory
     def process = nxf_cmd.execute(null, cache_path.toFile())
     process.waitFor()
+    // Copy nextflow log to work directory
+    cache_path.resolve(".nextflow.log").copyTo("${task.workDir}/nextflow.log")
     stdout = process.text
-    assert process.exitValue() == 0: stdout
+    assert process.exitValue() == 0 : stdout
     // Copy nextflow log to work directory
     cache_path.resolve(".nextflow.log").copyTo("${task.workDir}/nextflow.log")
 
     output:
-    path "results" , emit: output
+    path "results" , emit: outdir
     val stdout, emit: log
 }

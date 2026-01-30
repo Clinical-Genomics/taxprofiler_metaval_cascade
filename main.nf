@@ -21,7 +21,7 @@ workflow {
         readWithDefault( params.taxprofiler.add_config, Channel.value([]) ),      // custom config
         workflow.workDir.resolve('nf-core/taxprofiler').toUriString(),
     )
-    taxprofiler_output                  = NFCORE_TAXPROFILER.out.output
+    taxprofiler_output                  = NFCORE_TAXPROFILER.out.outdir
 
     // Concatenate FASTQs from multiple runs for each sample
     CAT_FASTQ(taxprofiler_output)
