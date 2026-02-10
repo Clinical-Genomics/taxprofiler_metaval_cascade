@@ -22,7 +22,7 @@ def createMetavalSamplesheet(Object dir, Object fastq_sheet) {
                 def fastq_map = [:]
                 csv_file.splitEachLine(',') { fields ->
                     if (fields[0] != 'sample') { // Skip header
-                        fastq_map[fields[0]] = [fields[1], fields[2], fields[3]] // instrument, fastq_1, fastq_2
+                        fastq_map[fields[0]] = [fields[1], fields[2], fields[3]] // instrument_platform, fastq_1, fastq_2
                     }
                 }
 
@@ -64,7 +64,7 @@ def createMetavalSamplesheet(Object dir, Object fastq_sheet) {
 
                     // Get fastq info from the map
                     def fastq_info = fastq_map[sample] ?: ['', '', '']
-                    def instrument = fastq_info[0] ?: ''
+                    def instrument_platform = fastq_info[0] ?: ''
                     def fastq_1 = fastq_info[1] ?: ''
                     def fastq_2 = fastq_info[2] ?: ''
 
@@ -82,14 +82,14 @@ def createMetavalSamplesheet(Object dir, Object fastq_sheet) {
                     def dia = safeFile("diamond/*/${sample}*diamond.tsv")
                     def dia_taxpasta = safeFile("taxpasta/diamond*.tsv")
 
-                    "${sample},${instrument},${fastq_1},${fastq_2},${k2_report},${k2_result},${k2_taxpasta},${cent_report},${cent_result},${cent_taxpasta},${dia},${dia_taxpasta}"
+                    "${sample},${instrument_platform},${fastq_1},${fastq_2},${k2_report},${k2_result},${k2_taxpasta},${cent_report},${cent_result},${cent_taxpasta},${dia},${dia_taxpasta}"
                 }
             }
             .collectFile(
                 name: 'metaval_samplesheet.csv',
                 newLine: true,
                 sort: false,
-                seed: "sample,instrument,fastq_1,fastq_2,kraken2_report,kraken2_result,kraken2_taxpasta,centrifuge_report,centrifuge_result,centrifuge_taxpasta,diamond,diamond_taxpasta"
+                seed: "sample,instrument_platform,fastq_1,fastq_2,kraken2_report,kraken2_result,kraken2_taxpasta,centrifuge_report,centrifuge_result,centrifuge_taxpasta,diamond,diamond_taxpasta"
             )
     } else {
         channel.value([])

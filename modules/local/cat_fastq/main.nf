@@ -23,18 +23,18 @@ process CAT_FASTQ {
             continue
         fi
 
-        # Determine instrument type
+        # Determine instrument_platform type
         case "\${subdir}" in
             bbduk)
-                instrument="ILLUMINA"
+                instrument_platform="ILLUMINA"
                 ;;
             nanoq|filtlong)
-                instrument="OXFORD_NANOPORE"
+                instrument_platform="OXFORD_NANOPORE"
                 ;;
         esac
 
         # Get unique sample names
-        if [[ "\${instrument}" == "ILLUMINA" ]]; then
+        if [[ "\${instrument_platform}" == "ILLUMINA" ]]; then
             samples=\$(ls \${fastq_dir}/*.fastq.gz 2>/dev/null | xargs -n 1 basename | cut -d'_' -f1 | sort -u || true)
         else
             samples=\$(ls \${fastq_dir}/*_filtered.fastq.gz 2>/dev/null | xargs -n 1 basename | sed 's/_filtered.fastq.gz//' | cut -d'_' -f1 | sort -u || true)
@@ -42,7 +42,7 @@ process CAT_FASTQ {
 
         # Concatenate fastq files for each sample
         for sample in \${samples}; do
-            if [[ "\${instrument}" == "ILLUMINA" ]]; then
+            if [[ "\${instrument_platform}" == "ILLUMINA" ]]; then
                 read1=\$(find \${fastq_dir} -name "\${sample}_*_1.fastq.gz" 2>/dev/null | sort || true)
                 if [[ -n "\${read1}" ]]; then
                     cat \${read1} > \${sample}_merged_1.fastq.gz
@@ -51,15 +51,15 @@ process CAT_FASTQ {
                 read2=\$(find \${fastq_dir} -name "\${sample}_*_2.fastq.gz" 2>/dev/null | sort || true)
                 if [[ -n "\${read2}" ]]; then
                     cat \${read2} > \${sample}_merged_2.fastq.gz
-                    echo "\${sample},\${instrument},${output_dir}/\${sample}_merged_1.fastq.gz,${output_dir}/\${sample}_merged_2.fastq.gz" >> samplesheet.csv
+                    echo "\${sample},\${instrument_platform},${output_dir}/\${sample}_merged_1.fastq.gz,${output_dir}/\${sample}_merged_2.fastq.gz" >> samplesheet.csv
                 else
-                    echo "\${sample},\${instrument},${output_dir}/\${sample}_merged_1.fastq.gz," >> samplesheet.csv
+                    echo "\${sample},\${instrument_platform},${output_dir}/\${sample}_merged_1.fastq.gz," >> samplesheet.csv
                 fi
             else
                 nanopore_fastq=\$(find \${fastq_dir} -name "\${sample}_*_filtered.fastq.gz" 2>/dev/null | sort || true)
                 if [[ -n "\${nanopore_fastq}" ]]; then
                     cat \${nanopore_fastq} > \${sample}_merged.fastq.gz
-                    echo "\${sample},\${instrument},${output_dir}/\${sample}_merged.fastq.gz," >> samplesheet.csv
+                    echo "\${sample},\${instrument_platform},${output_dir}/\${sample}_merged.fastq.gz," >> samplesheet.csv
                 fi
             fi
         done
