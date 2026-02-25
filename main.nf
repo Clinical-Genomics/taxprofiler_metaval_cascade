@@ -20,7 +20,7 @@ workflow {
         readWithDefault( params.taxprofiler.input, Channel.value([]) ), // samplesheet
         readWithDefault( params.taxprofiler.add_config, Channel.value([]) ),      // custom config
         workflow.workDir.resolve('nf-core/taxprofiler').toUriString(),
-        params.case_name,
+        params.case_name
     )
     taxprofiler_output                  = NFCORE_TAXPROFILER.out.outdir
 
