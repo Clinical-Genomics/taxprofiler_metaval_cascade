@@ -20,6 +20,7 @@ workflow {
         readWithDefault( params.taxprofiler.input, Channel.value([]) ), // samplesheet
         readWithDefault( params.taxprofiler.add_config, Channel.value([]) ),      // custom config
         workflow.workDir.resolve('nf-core/taxprofiler').toUriString(),
+        params.case_name,
     )
     taxprofiler_output                  = NFCORE_TAXPROFILER.out.outdir
 
@@ -36,5 +37,6 @@ workflow {
         metaval_samplesheet,                                                            // input
         readWithDefault( params.metaval.add_config, Channel.value([]) ),                // custom config
         workflow.workDir.resolve('genomic-medicine-sweden/metaval').toUriString(),
+        params.case_name
     )
 }

@@ -9,16 +9,19 @@ process NEXTFLOW_RUN {
     val samplesheet       // pipeline samplesheet
     val additional_config // custom configs
     val cache_dir         // cache directory
+    val run_name          // name for tower
 
     exec:
     // Set cache directory so workflow can `-resume`
     def cache_path = file(cache_dir)
     assert cache_path.mkdirs()
+    def timestamp = new Date().format("yyyy-MM-dd_HH-mm-ss")
     // Construct nextflow command
     def nxf_cmd = [
         'nextflow run',
             pipeline_name,
             nextflow_opts,
+            "-name ${run_name}_${timestamp}",
             params_file ? "-params-file $params_file" : '',
             additional_config ? "-c $additional_config" : '',
             samplesheet ? "--input $samplesheet" : '',
