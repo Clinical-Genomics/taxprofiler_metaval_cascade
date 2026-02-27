@@ -1,6 +1,5 @@
 process CAT_FASTQ {
     publishDir "${results_dir}/merged_filtered_fastq", mode: 'copy', pattern: "*_merged*.fastq.gz"
-    //publishDir "${results_dir}/merged_filtered_fastq", mode: 'copy', pattern: "samplesheet.csv"
 
     input:
     val results_dir  // pass the actual path string
