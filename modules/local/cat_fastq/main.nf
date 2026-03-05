@@ -2,7 +2,7 @@ process CAT_FASTQ {
     publishDir "${results_dir}/merged_filtered_fastq", mode: 'copy', pattern: "*_merged*.fastq.gz"
 
     input:
-    val results_dir  // pass the actual path string
+    val results_dir  // pass the actual path from the upstream pipeline (nf-core/taxprofiler)
 
     output:
     path "*_merged*.fastq.gz", emit: merged_fastq
